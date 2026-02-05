@@ -12,15 +12,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
       - uses: actions/checkout@v4
         with:
           repository: orkestra-ai-org/orkestra-core
           path: orkestra
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }}
       - run: |
           cp orkestra/VISION.md . 2>/dev/null || true
           cp orkestra/DECISIONS.md . 2>/dev/null || true
           git config user.email "missionbound@orkestra.ai"
           git config user.name "MissionBound"
           git add VISION.md DECISIONS.md
-          git diff --staged --quiet || git commit -m "[sync] Update from Orkestra" && git push
+          git diff --staged --quiet || (git commit -m "[sync] Update from Orkestra" && git push)
