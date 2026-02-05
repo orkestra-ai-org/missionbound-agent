@@ -1,0 +1,23 @@
+# MissionBound — Configuration Railway
+
+name = "missionbound-agent"
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "openclaw gateway"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+[deploy.resources]
+cpu = "1x"
+memory = "512MB"
+
+[env]
+AGENT_ID = "missionbound-growth"
+OPENCLAW_PORT = "8080"
+NODE_ENV = "production"
