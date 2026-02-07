@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://orkestra.ai/schemas/lead.json",
+  "title": "Lead",
+  "description": "Standard lead profile shared across skills (search-x-adapter output → icp-enricher input → notion-tracker input)",
+  "type": "object",
+  "required": ["id", "source", "created_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique lead identifier"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["twitter", "reddit", "hn", "linkedin", "discord", "organic", "referral"],
+      "description": "Channel where lead was detected"
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL of the original signal (post, comment, profile)"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "signal_type": {
+      "type": "string",
+      "enum": ["pain_point", "buying_intent", "competitor_mention", "feature_request", "general_interest"],
+      "description": "Type of signal detected"
+    },
+    "signal_strength": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"],
+      "default": "medium"
+    },
+    "name": {
+      "type": "string",
+      "description": "Lead name (if available)"
+    },
+    "handle": {
+      "type": "string",
+      "description": "Platform handle (@username, u/username, etc.)"
+    },
+    "github_handle": {
+      "type": "string",
+      "description": "GitHub username (if available)"
+    },
+    "company": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string"
+    },
+    "icp_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "ICP fit score (set by icp-enricher)"
+    },
+    "enrichment": {
+      "$ref": "enrichment.json",
+      "description": "Enriched data (set by icp-enricher)"
+    },
+    "stage": {
+      "type": "string",
+      "enum": ["raw", "enriched", "qualified", "contacted", "responded", "meeting", "converted", "churned"],
+      "default": "raw"
+    },
+    "tags": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "notes": {
+      "type": "string"
+    },
+    "utm": {
+      "type": "object",
+      "properties": {
+        "source": {"type": "string"},
+        "medium": {"type": "string"},
+        "campaign": {"type": "string"},
+        "content": {"type": "string"}
+      }
+    }
+  }
+}
