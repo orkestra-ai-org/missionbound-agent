@@ -1,0 +1,135 @@
+{
+  "agent": {
+    "id": "missionbound-growth",
+    "name": "MissionBound Growth",
+    "version": "2.0.0",
+    "soul_md": "./SOUL.md",
+    "agents_md": "./AGENTS.md",
+    "tools_md": "./TOOLS.md",
+    "memory_md": "./MEMORY.md"
+  },
+  "model_routing": {
+    "default": "moonshotai/kimi-k2.5",
+    "strategy": "anthropic/claude-opus-4",
+    "browsing": "deepseek/deepseek-v3",
+    "vision": "google/gemini-2.5-flash",
+    "twitter": "x-ai/grok-4.1-fast"
+  },
+  "rbac": {
+    "level": "L3",
+    "capabilities": {
+      "memory": true,
+      "sessions": true,
+      "fs_read": true,
+      "fs_write": "memory_only",
+      "browser": true,
+      "exec": false,
+      "web_search": true,
+      "web_fetch": true,
+      "cron": true,
+      "message": true,
+      "github": true,
+      "notion": true
+    },
+    "validation_gates": [
+      "browser:login",
+      "github:pr_merge",
+      "notion:enterprise_pages",
+      "message:external_publish"
+    ]
+  },
+  "budget": {
+    "daily_max_eur": 5.0,
+    "alert_threshold": 0.8,
+    "hard_stop_threshold": 1.0,
+    "model_costs": {
+      "moonshotai/kimi-k2.5": 0.0006,
+      "anthropic/claude-opus-4": 0.005,
+      "deepseek/deepseek-v3": 0.00027,
+      "google/gemini-2.5-flash": 0.0001,
+      "x-ai/grok-4.1-fast": 0.0002
+    }
+  },
+  "integrations": {
+    "notion": {
+      "enabled": true,
+      "token_env": "NOTION_TOKEN",
+      "databases": {
+        "memory": "Orkestra Team",
+        "tracking": "MissionBound"
+      }
+    },
+    "github": {
+      "enabled": true,
+      "token_env": "GITHUB_TOKEN",
+      "repo": "orkestra-ai-org/missionbound-agent"
+    },
+    "telegram": {
+      "enabled": true,
+      "bot_token_env": "TELEGRAM_BOT_TOKEN",
+      "channel": "missionbound"
+    },
+    "slack": {
+      "enabled": true,
+      "token_env": "SLACK_TOKEN",
+      "channel": "#missionbound"
+    }
+  },
+  "skills": {
+    "path": "./skills/missionbound/v3-final",
+    "auto_load": true,
+    "budgets": {
+      "search-x-adapter": 0.05,
+      "icp-enricher": 0.05,
+      "dm-automator": 0.03,
+      "gtm-strategist": 0.10,
+      "reddit-engager": 0.03,
+      "hn-monitor": 0.00,
+      "content-multiplier": 0.10,
+      "notion-tracker": 0.02,
+      "pricing-intel": 0.05,
+      "readme-optimizer": 0.05,
+      "discord-engager": 0.03,
+      "utm-tracker": 0.02
+    }
+  },
+  "workflows": {
+    "path": "./skills/missionbound/v3-final/workflows.yaml",
+    "auto_load": true,
+    "versioning": {
+      "enabled": true,
+      "current": "1.0.0",
+      "rollback_allowed": true
+    }
+  },
+  "heartbeat": {
+    "enabled": true,
+    "interval_minutes": 30,
+    "checks": {
+      "budget": true,
+      "agents": true,
+      "backup": true,
+      "skills_health": true
+    },
+    "report_channel": "telegram"
+  },
+  "security": {
+    "circuit_breakers": {
+      "enabled": true,
+      "error_threshold": 5,
+      "window_seconds": 60,
+      "timeout_ms": 30000,
+      "recovery_time_ms": 60000,
+      "fallback_action": "notify_ceo_and_queue"
+    },
+    "input_validation": "strict",
+    "egress_policy": "whitelist"
+  },
+  "logging": {
+    "level": "info",
+    "structured": true,
+    "format": "jsonl",
+    "output": "stdout",
+    "traces": true
+  }
+}
