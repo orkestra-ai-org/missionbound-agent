@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://orkestra.ai/schemas/engagement.json",
+  "title": "Engagement",
+  "description": "Engagement record shared between social skills (reddit-engager, discord-engager, hn-monitor) and notion-tracker",
+  "type": "object",
+  "required": ["id", "lead_id", "platform", "type", "timestamp"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "lead_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Reference to lead.json"
+    },
+    "platform": {
+      "type": "string",
+      "enum": ["twitter", "reddit", "hn", "linkedin", "discord", "email"]
+    },
+    "type": {
+      "type": "string",
+      "enum": ["comment", "reply", "dm", "post", "mention", "connection_request"]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message or content of engagement"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "approved", "sent", "delivered", "read", "replied", "bounced"],
+      "default": "draft"
+    },
+    "sentiment": {
+      "type": "string",
+      "enum": ["positive", "neutral", "negative", "unknown"],
+      "default": "unknown"
+    },
+    "promo_flag": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this engagement mentions product (counts toward promo ratio)"
+    },
+    "approval": {
+      "type": "object",
+      "properties": {
+        "required": {"type": "boolean"},
+        "approved_by": {"type": "string"},
+        "approved_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "upvotes": {"type": "number"},
+        "replies": {"type": "number"},
+        "impressions": {"type": "number"}
+      }
+    }
+  }
+}
