@@ -1,0 +1,110 @@
+# security/governance.yaml — MissionBound Growth Agent
+# Aligné VISION Section 9, 14
+# Version 1.0 | 2026-02-07
+
+governance:
+  agent_id: "missionbound-growth"
+  rbac_level: "L3"
+  version: "1.0.0"
+
+  # Incident Severity Matrix (VISION 9.3)
+  incident_severity:
+    P0:
+      type: "security_critical"
+      examples:
+        - "PII leak detected"
+        - "Prompt injection succeeded"
+        - "Credential exposure"
+        - "Unauthorized external action"
+      action: "kill_switch"
+      notification: "telegram_urgent"
+      timeout: "immediate"
+      requires: "ceo_investigation"
+
+    P1:
+      type: "production_impacted"
+      examples:
+        - "API down (skill unavailable)"
+        - "Budget 100% reached"
+        - "Skill error rate > 20%"
+        - "Circuit breaker triggered"
+      action: "circuit_breaker"
+      notification: "telegram"
+      timeout: "15min"
+      requires: "ceo_escalation"
+
+    P2:
+      type: "quality_degraded"
+      examples:
+        - "Promo ratio > 10%"
+        - "Error rate > 5%"
+        - "Latency > 10s"
+        - "Budget > 80%"
+      action: "monitoring_flag"
+      notification: "slack"
+      timeout: "24h"
+      requires: "review"
+
+    P3:
+      type: "informational"
+      examples:
+        - "Minor errors"
+        - "Trending anomalies"
+        - "Performance variations"
+      action: "log_trending"
+      notification: "dashboard"
+      timeout: "async"
+      requires: "none"
+
+  # Circuit Breakers (VISION 14.2 — Couche 5)
+  circuit_breakers:
+    enabled: true
+    error_threshold: 5          # Erreurs dans la fenêtre
+    window_seconds: 60           # Fenêtre de comptage
+    timeout_ms: 30000            # 30s max par appel
+    recovery_time_ms: 60000      # 1min avant retry
+    fallback_action: "notify_ceo_and_queue"
+    notification_channel: "telegram"
+    max_retries_after_recovery: 3
+
+  # Approval Chains
+  approval_chains:
+    external_publish:
+      approvers: ["jc_lanoix"]
+      timeout: "24h"
+      default_action: "reject"
+      channels: ["telegram", "slack"]
+
+    enterprise_memory:
+      approvers: ["jc_lanoix"]
+      timeout: "48h"
+      default_action: "reject"
+      pipeline: "pr_like"
+
+    launch_execution:
+      approvers: ["jc_lanoix"]
+      timeout: "no_timeout"
+      default_action: "hold"
+
+  # Audit Logging
+  audit_logging:
+    enabled: true
+    format: "jsonl"
+    retention_days: 90
+    events:
+      - "skill_invocation"
+      - "workflow_execution"
+      - "human_gate_triggered"
+      - "budget_alert"
+      - "circuit_breaker_triggered"
+      - "escalation"
+      - "memory_write"
+      - "external_action_attempted"
+
+  # Kill Switch (VISION 9.2 — P0 uniquement)
+  kill_switch:
+    trigger: "P0_only"
+    action: "stop_all_skills"
+    notification: "telegram_urgent"
+    requires_investigation: true
+    auto_restart: false
