@@ -1,4 +1,5 @@
-# MissionBound — Configuration Railway
+# MissionBound Agent — Configuration Railway v2.0
+# Ajout: volume persistant pour mémoire agent
 
 name = "missionbound-agent"
 
@@ -7,7 +8,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "openclaw gateway"
+startCommand = "openclaw gateway --config ./config.json"
 healthcheckPath = "/health"
 healthcheckTimeout = 30
 restartPolicyType = "ON_FAILURE"
@@ -16,6 +17,10 @@ restartPolicyMaxRetries = 3
 [deploy.resources]
 cpu = "1x"
 memory = "512MB"
+
+# Volume persistant pour mémoire agent (CRITIQUE — sans ceci, mémoire perdue au restart)
+[deploy.volumes]
+memory = "/data"
 
 [env]
 AGENT_ID = "missionbound-growth"
