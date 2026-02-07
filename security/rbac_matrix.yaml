@@ -1,0 +1,104 @@
+# security/rbac_matrix.yaml — Orkestra RBAC Matrix
+# Aligné VISION Section 14.3 (v1.3.1)
+# Version 1.0 | 2026-02-07
+
+rbac_matrix:
+  version: "1.0.0"
+
+  # Matrice complète L1-L4 (VISION 14.3)
+  levels:
+    L1:
+      name: "Observer"
+      description: "Read-only agent, minimal capabilities"
+      tools:
+        memory: true
+        sessions: true
+        fs_read: false
+        fs_write: false
+        browser: false
+        exec: false
+        web_search: false
+        web_fetch: false
+        cron: false
+        message: false
+        github: false
+        notion: false
+      egress: "none"
+      memory_access: "read_agent_only"
+      approval: "auto"
+
+    L2:
+      name: "Worker"
+      description: "Execution agent with limited scope"
+      tools:
+        memory: true
+        sessions: true
+        fs_read: true   # paths autorisés uniquement
+        fs_write: false
+        browser: false
+        exec: false
+        web_search: true
+        web_fetch: true
+        cron: false
+        message: false
+        github: false
+        notion: false
+      egress: "strict_allowlist"
+      memory_access: "read_agent + read_enterprise"
+      approval: "auto"
+
+    L3:
+      name: "Specialist"
+      description: "Autonomous agent with validation gates"
+      tools:
+        memory: true
+        sessions: true
+        fs_read: true
+        fs_write: "memory_only"  # append-only
+        browser: true            # validation CEO pour login
+        exec: false
+        web_search: true
+        web_fetch: true
+        cron: true
+        message: true
+        github: true             # PRs via skill, gate CEO
+        notion: true
+      egress: "allowlist"
+      memory_access: "read_agent + read_enterprise + propose_enterprise"
+      approval: "ceo_async_24h"
+
+    L4:
+      name: "Privileged"
+      description: "Full-capability agent with strict oversight"
+      tools:
+        memory: true
+        sessions: true
+        fs_read: true
+        fs_write: true
+        browser: true
+        exec: true               # sandbox uniquement
+        web_search: true
+        web_fetch: true
+        cron: true
+        message: true
+        github: true
+        notion: true
+      egress: "proxy_audit"
+      memory_access: "read_agent + read_enterprise + propose_enterprise_priority"
+      approval: "ceo_sync_15min"
+
+  # MissionBound agent level
+  agent_assignments:
+    missionbound-growth:
+      level: "L3"
+      justification: "Specialist Growth agent — autonomous research, gated external actions"
+      overrides:
+        exec: false              # Jamais, même si L3 le permettrait
+        fs_write: "memory_only"  # Plus restrictif que L3 standard
+
+  # Règle absolue (VISION v1.3.1)
+  invariants:
+    - "No level bypasses append-only enterprise memory"
+    - "L4 = accelerated approval, NOT bypass"
+    - "Kill switch = P0 only"
+    - "Browser login = always requires CEO validation regardless of level"
