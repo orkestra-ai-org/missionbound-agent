@@ -1,0 +1,93 @@
+# security/egress_policy.yaml — MissionBound Growth Agent
+# Aligné VISION Section 14.4
+# Version 1.0 | 2026-02-07
+
+egress_policy:
+  default: DENY
+  precedence: "RBAC → Tool Policy → Egress Policy → DLP → Logging"
+  rule: "allowlist wins over denylist"
+
+  domains:
+    # --- Notion (CRM, Dashboard) ---
+    "api.notion.com":
+      methods_allowed: [GET, POST, PATCH]
+      paths_allowed: ["/v1/pages", "/v1/databases", "/v1/blocks"]
+      rate_limit: "3/sec"
+      require_auth: true
+      auth_env: "NOTION_TOKEN"
+
+    # --- GitHub (PRs, repo reading) ---
+    "api.github.com":
+      methods_allowed: [GET, POST]
+      paths_allowed: ["/repos/orkestra-ai-org/*", "/repos/jeancristof/missionbound/*"]
+      rate_limit: "30/min"
+      require_auth: true
+      auth_env: "GITHUB_TOKEN"
+
+    # --- Telegram (Notifications CEO) ---
+    "api.telegram.org":
+      methods_allowed: [GET, POST]
+      paths_allowed: ["/bot*"]
+      rate_limit: "30/min"
+      require_auth: true
+      auth_env: "TELEGRAM_BOT_TOKEN"
+
+    # --- Slack (Communication async) ---
+    "slack.com":
+      methods_allowed: [POST]
+      paths_allowed: ["/api/chat.postMessage", "/api/conversations.*"]
+      rate_limit: "1/sec"
+      require_auth: true
+      auth_env: "SLACK_TOKEN"
+
+    # --- OpenRouter (Model routing) ---
+    "openrouter.ai":
+      methods_allowed: [POST]
+      paths_allowed: ["/api/v1/chat/completions"]
+      rate_limit: "60/min"
+      require_auth: true
+      auth_env: "OPENROUTER_API_KEY"
+
+    # --- Reddit (Engagement) ---
+    "reddit.com":
+      methods_allowed: [GET]
+      rate_limit: "60/min"
+
+    "oauth.reddit.com":
+      methods_allowed: [GET, POST]
+      paths_allowed: ["/api/v1/*"]
+      rate_limit: "60/min"
+      require_auth: true
+      auth_env: "REDDIT_TOKEN"
+
+    # --- Hacker News (Monitoring) ---
+    "news.ycombinator.com":
+      methods_allowed: [GET]
+      rate_limit: "30/min"
+
+    "hn.algolia.com":
+      methods_allowed: [GET]
+      paths_allowed: ["/api/v1/*"]
+      rate_limit: "60/min"
+
+    # --- Brave Search (Web Search) ---
+    "api.search.brave.com":
+      methods_allowed: [GET]
+      rate_limit: "15/min"
+      require_auth: true
+      auth_env: "BRAVE_API_KEY"
+
+  # DLP (Data Loss Prevention) — VISION 14.4
+  dlp:
+    enabled: true
+    patterns:
+      - "api_key"
+      - "token"
+      - "password"
+      - "secret"
+      - "-----BEGIN"
+      - "sk-"
+      - "ghp_"
+      - "xoxb-"
+    action: "redact_and_alert"
+    alert_channel: "telegram"
