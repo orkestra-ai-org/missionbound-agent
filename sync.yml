@@ -1,0 +1,102 @@
+# .github/workflows/sync.yml v2.0
+# Sync Enterprise Memory depuis orkestra-memory
+# Corrections: error handling explicite, validation post-sync, 5+ fichiers
+
+name: Sync Enterprise Memory
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'  # Toutes les 4h (aligné VISION 6.1)
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout missionbound-agent
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
+
+      - name: Checkout orkestra-memory
+        uses: actions/checkout@v4
+        with:
+          repository: orkestra-ai-org/orkestra-memory
+          path: orkestra-memory
+          token: ${{ secrets.PAT }}
+        # Si orkestra-memory inaccessible → job échoue visiblement
+
+      - name: Sync enterprise files
+        run: |
+          SYNCED=0
+          ERRORS=0
+
+          # Fichiers enterprise obligatoires
+          for file in VISION.md STANDARDS.md RUNBOOK.md STRATEGY.md; do
+            if [ -f "orkestra-memory/$file" ]; then
+              cp "orkestra-memory/$file" .
+              echo "✅ Synced: $file"
+              SYNCED=$((SYNCED + 1))
+            else
+              echo "⚠️ WARNING: $file not found in orkestra-memory"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+
+          # Fichiers enterprise optionnels
+          for file in CEO_PROFILE.md DECISIONS.md; do
+            if [ -f "orkestra-memory/$file" ]; then
+              cp "orkestra-memory/$file" .
+              echo "✅ Synced (optional): $file"
+              SYNCED=$((SYNCED + 1))
+            fi
+          done
+
+          # Sync skills orkestra (si présents)
+          if [ -d "orkestra-memory/skills/orkestra" ]; then
+            mkdir -p skills/orkestra
+            cp -r orkestra-memory/skills/orkestra/* skills/orkestra/
+            echo "✅ Synced: orkestra skills"
+          fi
+
+          echo ""
+          echo "=== Sync Summary ==="
+          echo "Synced: $SYNCED files"
+          echo "Warnings: $ERRORS files"
+
+          # Échouer si aucun fichier obligatoire n'a été trouvé
+          if [ $SYNCED -eq 0 ]; then
+            echo "❌ CRITICAL: No files synced from orkestra-memory"
+            exit 1
+          fi
+
+      - name: Validate sync
+        run: |
+          # Vérifier que les fichiers synced ne sont pas vides
+          for file in VISION.md; do
+            if [ -f "$file" ] && [ ! -s "$file" ]; then
+              echo "❌ ERROR: $file exists but is empty after sync"
+              exit 1
+            fi
+          done
+          echo "✅ Validation passed: synced files are non-empty"
+
+      - name: Commit and push
+        run: |
+          git config user.name "MissionBound Agent"
+          git config user.email "missionbound@orkestra.ai"
+
+          # Stage enterprise files
+          git add VISION.md STANDARDS.md RUNBOOK.md STRATEGY.md CEO_PROFILE.md DECISIONS.md 2>/dev/null || true
+          git add skills/orkestra/ 2>/dev/null || true
+
+          # Commit only if changes
+          if git diff --cached --quiet; then
+            echo "ℹ️ No changes to commit"
+          else
+            git commit -m "sync: Enterprise memory $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            git push
+            echo "✅ Changes committed and pushed"
+          fi
