@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://orkestra.ai/schemas/enrichment.json",
+  "title": "Enrichment",
+  "description": "Enriched profile data produced by icp-enricher, consumed by dm-automator and notion-tracker",
+  "type": "object",
+  "properties": {
+    "enriched_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "icp_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "icp_breakdown": {
+      "type": "object",
+      "properties": {
+        "company_fit": {"type": "number", "minimum": 0, "maximum": 100},
+        "role_fit": {"type": "number", "minimum": 0, "maximum": 100},
+        "tech_fit": {"type": "number", "minimum": 0, "maximum": 100},
+        "intent_signals": {"type": "number", "minimum": 0, "maximum": 100}
+      }
+    },
+    "company_data": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"},
+        "size": {"type": "string", "enum": ["solo", "2-10", "11-50", "51-200", "200+"]},
+        "industry": {"type": "string"},
+        "tech_stack": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "uses_ai_coding": {"type": "boolean"}
+      }
+    },
+    "claude_code_signals": {
+      "type": "object",
+      "description": "Specific signals for Claude Code / MissionBound fit",
+      "properties": {
+        "mentions_claude": {"type": "boolean"},
+        "mentions_scope_issues": {"type": "boolean"},
+        "mentions_ai_agents": {"type": "boolean"},
+        "repo_count": {"type": "number"},
+        "active_contributor": {"type": "boolean"},
+        "open_source": {"type": "boolean"}
+      }
+    },
+    "bant": {
+      "type": "object",
+      "description": "BANT qualification",
+      "properties": {
+        "budget": {"type": "string", "enum": ["unknown", "likely", "confirmed", "none"]},
+        "authority": {"type": "string", "enum": ["unknown", "decision_maker", "influencer", "user"]},
+        "need": {"type": "string", "enum": ["unknown", "acute", "moderate", "low"]},
+        "timeline": {"type": "string", "enum": ["unknown", "immediate", "this_quarter", "this_year", "no_timeline"]}
+      }
+    }
+  }
+}
