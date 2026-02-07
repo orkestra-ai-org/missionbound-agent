@@ -1,0 +1,291 @@
+# Workflows Inter-Skills — MissionBound Growth Agent
+# Définit les flux de travail entre les différentes skills
+
+version: 1.0.0
+updated: 2026-02-06
+
+workflows:
+
+  # Workflow 1: Signal Detection → Lead Enrichment → CRM
+  signal_to_crm:
+    name: "Signal Detection to CRM"
+    trigger: "pain_point_detected"
+    description: "Détecte un signal d'achat, enrichit le lead, crée dans CRM"
+    steps:
+      - step: 1
+        skill: search-x-adapter
+        action: detect_leads
+        output: raw_lead
+        
+      - step: 2
+        skill: icp-enricher
+        action: enrich_profile
+        input: "{{raw_lead}}"
+        condition: "signal_strength == 'high'"
+        output: enriched_lead
+        
+      - step: 3
+        skill: notion-tracker
+        action: create_lead
+        input: "{{enriched_lead}}"
+        condition: "icp_score >= 70"
+        output: crm_record
+        
+      - step: 4
+        skill: utm-tracker
+        action: generate_tracking_links
+        input: "{{crm_record.id}}"
+        output: tracked_urls
+        
+    fallback:
+      - if: "icp_score < 70"
+        action: "log_low_fit_lead"
+      - if: "enrichment_failed"
+        action: "create_basic_crm_record"
+
+  # Workflow 2: Content Atom → Multi-Platform Distribution
+  content_distribution:
+    name: "Content Distribution Pipeline"
+    trigger: "canonical_content_ready"
+    description: "Transforme un contenu canonique en variants par plateforme"
+    steps:
+      - step: 1
+        skill: content-multiplier
+        action: extract_atom
+        input: blog_post
+        output: content_atom
+        
+      - step: 2
+        skill: content-multiplier
+        action: generate_variants
+        parallel:
+          - platform: twitter
+            format: thread
+          - platform: linkedin
+            format: post
+          - platform: reddit
+            format: post
+          - platform: discord
+            format: message
+        output: platform_variants
+        
+      - step: 3
+        skill: utm-tracker
+        action: tag_urls
+        input: "{{platform_variants}}"
+        output: tracked_variants
+        
+      - step: 4
+        gate: human_validation
+        timeout: 24h
+        condition: always
+        
+      - step: 5
+        skill: search-x-adapter
+        action: schedule_thread
+        condition: "human_approved == true"
+        platform: twitter
+        
+      - step: 6
+        skill: reddit-engager
+        action: schedule_post
+        condition: "human_approved == true"
+        platform: reddit
+        
+      - step: 7
+        skill: discord-engager
+        action: queue_message
+        condition: "human_approved == true"
+        platform: discord
+
+  # Workflow 3: HN Launch Campaign
+  hn_launch:
+    name: "Hacker News Launch"
+    trigger: "launch_requested"
+    description: "Orchestre un lancement Show HN complet"
+    steps:
+      - step: 1
+        skill: hn-monitor
+        action: validate_readiness
+        output: readiness_check
+        
+      - step: 2
+        skill: readme-optimizer
+        action: audit_readme
+        output: readme_score
+        condition: "readiness_check.passed == true"
+        
+      - step: 3
+        skill: hn-monitor
+        action: calculate_optimal_time
+        output: launch_time
+        
+      - step: 4
+        skill: utm-tracker
+        action: generate_launch_urls
+        output: tracked_urls
+        
+      - step: 5
+        skill: hn-monitor
+        action: draft_show_hn
+        output: draft_post
+        
+      - step: 6
+        gate: ceo_approval
+        condition: always
+        
+      - step: 7
+        skill: hn-monitor
+        action: schedule_launch
+        input: "{{launch_time}}"
+        condition: "ceo_approved == true"
+        
+      - step: 8
+        skill: notion-tracker
+        action: log_launch
+        input: "{{launch_metrics}}"
+
+  # Workflow 4: DM Outreach Sequence
+  dm_sequence:
+    name: "DM Outreach Sequence"
+    trigger: "qualified_lead_identified"
+    description: "Séquence de DMs personnalisés avec validation humaine"
+    steps:
+      - step: 1
+        skill: dm-automator
+        action: analyze_profile
+        input: "{{lead_id}}"
+        output: personalization_data
+        
+      - step: 2
+        skill: dm-automator
+        action: draft_first_message
+        input: "{{personalization_data}}"
+        output: draft_message
+        
+      - step: 3
+        gate: human_validation
+        timeout: 48h
+        condition: always
+        
+      - step: 4
+        skill: dm-automator
+        action: send_message
+        condition: "human_approved == true"
+        
+      - step: 5
+        skill: notion-tracker
+        action: update_lead_status
+        status: "contacted"
+        
+      - step: 6
+        skill: dm-automator
+        action: detect_response
+        wait: 72h
+        
+      - step: 7
+        skill: dm-automator
+        action: draft_followup
+        condition: "no_response == true"
+
+  # Workflow 5: Weekly Intelligence Report
+  weekly_intel:
+    name: "Weekly Intelligence Report"
+    trigger: "cron:weekly_sunday_18h"
+    description: "Rapport hebdomadaire de veille concurrence et marché"
+    steps:
+      - step: 1
+        skill: hn-monitor
+        action: weekly_digest
+        output: hn_insights
+        
+      - step: 2
+        skill: pricing-intel
+        action: competitor_changes
+        output: pricing_updates
+        
+      - step: 3
+        skill: search-x-adapter
+        action: trend_analysis
+        output: twitter_trends
+        
+      - step: 4
+        skill: reddit-engager
+        action: community_pulses
+        output: reddit_insights
+        
+      - step: 5
+        skill: notion-tracker
+        action: generate_report
+        inputs:
+          - "{{hn_insights}}"
+          - "{{pricing_updates}}"
+          - "{{twitter_trends}}"
+          - "{{reddit_insights}}"
+        output: weekly_report
+
+  # Workflow 6: Pricing Strategy Review
+  pricing_review:
+    name: "Pricing Strategy Review"
+    trigger: "monthly" | "competitor_major_change"
+    description: "Revue stratégique des prix avec recommandations"
+    steps:
+      - step: 1
+        skill: pricing-intel
+        action: market_analysis
+        output: market_position
+        
+      - step: 2
+        skill: pricing-intel
+        action: van_westendorp_analysis
+        output: price_sensitivity
+        
+      - step: 3
+        skill: pricing-intel
+        action: generate_recommendations
+        inputs:
+          - "{{market_position}}"
+          - "{{price_sensitivity}}"
+        output: pricing_strategy
+        
+      - step: 4
+        gate: ceo_approval
+        condition: "recommendation_impact == 'high'"
+
+# Triggers Définis
+triggers:
+  pain_point_detected:
+    sources: [search-x-adapter, reddit-engager, hn-monitor]
+    condition: "signal_strength >= 'medium'"
+    
+  qualified_lead_identified:
+    source: notion-tracker
+    condition: "lead.stage == 'qualified' AND lead.icp_score >= 75"
+    
+  launch_requested:
+    source: gtm-strategist
+    condition: "launch_readiness == true"
+
+# Gates de Validation
+gates:
+  human_validation:
+    approvers: [jc_lanoix]
+    timeout: 24h
+    default_action: "reject"
+    
+  ceo_approval:
+    approvers: [jc_lanoix]
+    timeout: 48h
+    escalation: true
+
+# Orchestration Rules
+rules:
+  - parallel_execution: true
+    max_concurrent: 3
+    
+  - error_handling: "graceful_degradation"
+    fallback_to: "manual_notification"
+    
+  - budget_guard:
+      max_per_workflow: 0.50€
+      alert_threshold: 0.40€
