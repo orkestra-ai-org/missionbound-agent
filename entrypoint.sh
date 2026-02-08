@@ -1,5 +1,5 @@
 #!/bin/sh
-# OpenClaw Gateway Entrypoint pour Railway - avec setup non-interactif
+# OpenClaw Gateway Entrypoint - Mode "personnalité forcée"
 
 # Nettoyage
 rm -f /data/.openclaw/gateway.pid /data/.openclaw/*.lock 2>/dev/null || true
@@ -16,52 +16,29 @@ if [ -n "$OPENROUTER_API_KEY" ]; then
     echo "Auth profiles configured"
 fi
 
-# Création de l'agent via setup non-interactif
-if [ ! -d /root/.openclaw/agents/missionbound-growth ]; then
-    echo "Creating agent missionbound-growth..."
-    mkdir -p /root/.openclaw/agents/missionbound-growth
-    
-    # Copie des fichiers de personnalité
-    cp /app/SOUL.md /root/.openclaw/agents/missionbound-growth/SOUL.md 2>/dev/null || true
-    cp /app/AGENTS.md /root/.openclaw/agents/missionbound-growth/AGENTS.md 2>/dev/null || true
-    cp /app/TOOLS.md /root/.openclaw/agents/missionbound-growth/TOOLS.md 2>/dev/null || true
-    cp /app/MEMORY.md /root/.openclaw/agents/missionbound-growth/MEMORY.md 2>/dev/null || true
-    
-    # Création du fichier agent.json
-    cat > /root/.openclaw/agents/missionbound-growth/agent.json << 'EOF'
+# HACK: Copie les fichiers de personnalité directement dans le dossier "main" agent
+# Quand --allow-unconfigured est utilisé, OpenClaw utilise l'agent "main"
+mkdir -p /root/.openclaw/agents/main/agent
+cp /app/SOUL.md /root/.openclaw/agents/main/agent/SOUL.md 2>/dev/null || true
+cp /app/AGENTS.md /root/.openclaw/agents/main/agent/AGENTS.md 2>/dev/null || true
+cp /app/TOOLS.md /root/.openclaw/agents/main/agent/TOOLS.md 2>/dev/null || true
+cp /app/MEMORY.md /root/.openclaw/agents/main/agent/MEMORY.md 2>/dev/null || true
+
+# Création d'un agent.json pour l'agent "main" (utilisé par --allow-unconfigured)
+cat > /root/.openclaw/agents/main/agent.json << 'EOFMAIN'
 {
-  "id": "missionbound-growth",
+  "id": "main",
   "name": "MissionBound Growth",
-  "version": "2.0.0",
-  "soulMdPath": "./SOUL.md",
-  "agentsMdPath": "./AGENTS.md",
-  "toolsMdPath": "./TOOLS.md",
-  "memoryMdPath": "./MEMORY.md"
+  "soulMdPath": "./agent/SOUL.md",
+  "agentsMdPath": "./agent/AGENTS.md",
+  "toolsMdPath": "./agent/TOOLS.md",
+  "memoryMdPath": "./agent/MEMORY.md"
 }
-EOF
-    echo "Agent created with personality files"
-fi
+EOFMAIN
 
-# Config gateway
-if [ ! -f /data/.openclaw/openclaw.json ]; then
-    cat > /data/.openclaw/openclaw.json << 'EOF'
-{
-  "gateway": {
-    "mode": "local",
-    "port": 8080,
-    "host": "0.0.0.0",
-    "auth": {
-      "mode": "token",
-      "token": "missionbound-token-2026"
-    }
-  },
-  "agent": {
-    "id": "missionbound-growth"
-  }
-}
-EOF
-fi
+echo "=== Fichiers copiés dans main/agent ==="
+ls -la /root/.openclaw/agents/main/agent/
 
-# Démarrage SANS --allow-unconfigured
+# Démarrage avec --allow-unconfigured MAIS avec les fichiers en place
 cd /app
-exec openclaw gateway --token missionbound-token-2026
+exec openclaw gateway --token missionbound-token-2026 --allow-unconfigured
