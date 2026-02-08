@@ -1,5 +1,6 @@
-# MissionBound Agent — Dockerfile v2.4
+# MissionBound Agent — Dockerfile v2.5
 # Fix: OpenClaw version inexistante (1.2.0 n'existe pas sur npm)
+# Cache-bust: 2026-02-08T05:01:00Z
 
 FROM node:22-alpine
 
