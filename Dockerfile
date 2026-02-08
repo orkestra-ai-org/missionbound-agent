@@ -1,5 +1,5 @@
-# MissionBound Agent — Dockerfile v2.6
-# Fix: Passage de Alpine à Debian (node-llama-cpp nécessite glibc)
+# MissionBound Agent — Dockerfile v2.7
+# Fix: Healthcheck Railway simplifié
 
 FROM node:22-slim
 
@@ -36,15 +36,9 @@ RUN mkdir -p /data/.openclaw/agents/missionbound-growth/memory
 # Permissions
 RUN chmod -R 777 /data
 
+# Variable d'environnement pour le port Railway
+ENV PORT=8080
 EXPOSE 8080
 
-# Script d'entrypoint avec debugging
-RUN echo '#!/bin/sh' > /entrypoint.sh && \
-    echo 'set -x' >> /entrypoint.sh && \
-    echo 'echo "=== Starting MissionBound Agent ==="' >> /entrypoint.sh && \
-    echo 'echo "OpenClaw version: $(openclaw --version 2>&1 || echo \"version check failed\")"' >> /entrypoint.sh && \
-    echo 'echo "=== Starting Gateway ==="' >> /entrypoint.sh && \
-    echo 'exec openclaw gateway --config ./config.json --port 8080' >> /entrypoint.sh && \
-    chmod +x /entrypoint.sh
-
-CMD ["/entrypoint.sh"]
+# Entrypoint simple sans healthcheck complexe
+CMD openclaw gateway --config ./config.json --port 8080 2>&1
