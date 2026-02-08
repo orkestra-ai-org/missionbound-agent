@@ -59,7 +59,7 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo '  echo "Auth profiles configured"' >> /entrypoint.sh && \
     echo 'fi' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo 'cd /app && exec openclaw gateway --token missionbound-token-2026' >> /entrypoint.sh && \
+    echo 'cd /app && exec openclaw gateway --token missionbound-token-2026 --config ./config.json' >> /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
 # Permissions
