@@ -51,7 +51,8 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo 'EOF' >> /entrypoint.sh && \
     echo '  echo "Auth profiles configured with OpenRouter"' >> /entrypoint.sh && \
     echo 'fi' >> /entrypoint.sh && \
-    echo 'exec openclaw gateway --token missionbound-token-2026 --allow-unconfigured' >> /entrypoint.sh && \
+    echo '# Démarrage du gateway avec config' >> /entrypoint.sh && \
+    echo 'cd /app && openclaw gateway --token missionbound-token-2026' >> /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
 # Permissions
