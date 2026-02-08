@@ -41,4 +41,4 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Entrypoint simple
-CMD ["openclaw", "gateway"]
+CMD ["openclaw", "gateway", "--allow-unconfigured"]
