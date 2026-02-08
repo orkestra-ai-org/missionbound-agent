@@ -1,6 +1,5 @@
 #!/bin/sh
-# OpenClaw Gateway Entrypoint - Fix v2 par Claude Code
-# Corrections: mode hosted, channels.telegram, TELEGRAM_OWNER_ID
+# OpenClaw Gateway Entrypoint - Schema validé
 
 # Nettoyage
 rm -f /data/.openclaw/gateway.pid /data/.openclaw/*.lock 2>/dev/null || true
@@ -11,31 +10,18 @@ sleep 1
 export OPENCLAW_STATE_DIR=/data/.openclaw
 mkdir -p $OPENCLAW_STATE_DIR
 
-# Génération dynamique de openclaw.json avec les bonnes valeurs
+# Config MINIMALE valide (pas de hosted, pas de allowlist)
 if [ ! -f $OPENCLAW_STATE_DIR/openclaw.json ]; then
-    # Construction de la config Telegram si TELEGRAM_OWNER_ID est set
-    TELEGRAM_BLOCK=""
-    if [ -n "$TELEGRAM_OWNER_ID" ]; then
-        TELEGRAM_BLOCK='
-  "channels": {
-    "telegram": {
-      "enabled": true,
-      "dmPolicy": "allowlist",
-      "allowlist": ['"$TELEGRAM_OWNER_ID"']
-    }
-  },'
-    fi
-
-    cat > $OPENCLAW_STATE_DIR/openclaw.json << EOF
+    cat > $OPENCLAW_STATE_DIR/openclaw.json << 'EOF'
 {
   "gateway": {
-    "mode": "hosted",
+    "mode": "local",
     "port": 8080,
     "auth": {
       "mode": "token",
       "token": "missionbound-token-2026"
     }
-  },${TELEGRAM_BLOCK}
+  },
   "agents": {
     "defaults": {
       "workspace": "/app"
@@ -43,7 +29,7 @@ if [ ! -f $OPENCLAW_STATE_DIR/openclaw.json ]; then
   }
 }
 EOF
-    echo "Created openclaw.json with mode=hosted"
+    echo "Created minimal config"
 fi
 
 # Auth profiles
@@ -53,10 +39,6 @@ if [ -n "$OPENROUTER_API_KEY" ]; then
     echo "Auth profiles configured"
 fi
 
-# Vérification
-echo "=== Config ==="
-cat $OPENCLAW_STATE_DIR/openclaw.json
-
-# Démarrage
+# Démarrage avec --allow-unconfigured (mode qui fonctionne)
 cd /app
-exec openclaw gateway --token missionbound-token-2026
+exec openclaw gateway --token missionbound-token-2026 --allow-unconfigured
