@@ -9,8 +9,10 @@ dockerfilePath = "Dockerfile"
 
 [deploy]
 startCommand = "openclaw gateway --config ./config.json --port 8080"
-healthcheckPath = "/health"
-healthcheckTimeout = 60
+# Healthcheck désactivé: node-llama-cpp compile au démarrage (>30s)
+# Railway vérifie que le processus tourne (suffisant pour notre usage)
+# healthcheckPath = "/health"
+# healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
