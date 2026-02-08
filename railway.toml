@@ -8,7 +8,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "openclaw gateway --allow-unconfigured"
+startCommand = "openclaw gateway --token missionbound-token-2026"
 # Healthcheck désactivé: node-llama-cpp compile au démarrage (>30s)
 # Railway vérifie que le processus tourne (suffisant pour notre usage)
 # healthcheckPath = "/health"
