@@ -2,7 +2,7 @@ name: Sync MissionBound ↔ Orkestra
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '0 */4 * * *'  # Toutes les 4h (au lieu de 5min pour économiser les minutes GitHub)
   push:
     branches: [main]
   workflow_dispatch:
@@ -11,18 +11,64 @@ jobs:
   sync-from-orkestra:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout missionbound-agent
+        uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PAT }}
-      - uses: actions/checkout@v4
+          token: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Checkout orkestra-memory
+        uses: actions/checkout@v4
         with:
-          repository: orkestra-ai-org/orkestra-core
-          path: orkestra
-          token: ${{ secrets.PAT }}
-      - run: |
-          cp orkestra/VISION.md . 2>/dev/null || true
-          cp orkestra/DECISIONS.md . 2>/dev/null || true
+          repository: orkestra-ai-org/orkestra-memory
+          path: orkestra-memory
+          token: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Sync files from orkestra-memory
+        run: |
+          # Liste des fichiers à sync (tous les fichiers enterprise)
+          FILES="VISION.md DECISIONS.md STANDARDS.md RUNBOOK.md STRATEGY.md CEO_PROFILE.md"
+          
+          for file in $FILES; do
+            if [ -f "orkestra-memory/$file" ]; then
+              cp "orkestra-memory/$file" .
+              echo "✅ Synced: $file"
+            else
+              echo "⚠️ Missing in orkestra-memory: $file (skipping)"
+            fi
+          done
+          
+          # Sync skills orkestra si présents
+          if [ -d "orkestra-memory/skills/orkestra" ]; then
+            mkdir -p skills/orkestra
+            cp -r orkestra-memory/skills/orkestra/* skills/orkestra/ 2>/dev/null || true
+            echo "✅ Synced: skills/orkestra/"
+          fi
+          
+      - name: Validate sync
+        run: |
+          # Vérifier que les fichiers critiques ne sont pas vides
+          for file in VISION.md STANDARDS.md; do
+            if [ ! -s "$file" ]; then
+              echo "❌ ERROR: $file is empty or missing after sync"
+              exit 1
+            fi
+          done
+          echo "✅ Validation passed"
+          
+      - name: Commit changes
+        run: |
           git config user.email "missionbound@orkestra.ai"
-          git config user.name "MissionBound"
-          git add VISION.md DECISIONS.md
-          git diff --staged --quiet || (git commit -m "[sync] Update from Orkestra" && git push)
+          git config user.name "MissionBound Agent"
+          
+          # Ajouter tous les fichiers sync
+          git add VISION.md DECISIONS.md STANDARDS.md RUNBOOK.md STRATEGY.md CEO_PROFILE.md 2>/dev/null || true
+          git add skills/orkestra/ 2>/dev/null || true
+          
+          # Commit seulement s'il y a des changements
+          if ! git diff --cached --quiet; then
+            git commit -m "[sync] Update from orkestra-memory $(date -u +%Y-%m-%d-%H:%M)"
+            git push
+            echo "✅ Changes pushed"
+          else
+            echo "✅ No changes to sync"
+          fi
