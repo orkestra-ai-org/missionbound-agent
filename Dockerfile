@@ -59,7 +59,9 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo '  echo "Auth profiles configured"' >> /entrypoint.sh && \
     echo 'fi' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo 'cd /app && exec openclaw gateway --token missionbound-token-2026 --config ./config.json' >> /entrypoint.sh && \
+    echo '# Copie config vers l\'emplacement attendu par OpenClaw' >> /entrypoint.sh && \
+    echo 'mkdir -p /data/.openclaw && cp /app/config.json /data/.openclaw/openclaw.json 2>/dev/null || true' >> /entrypoint.sh && \
+    echo 'cd /app && exec openclaw gateway --token missionbound-token-2026' >> /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
 # Permissions
