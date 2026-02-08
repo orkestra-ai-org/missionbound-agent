@@ -25,12 +25,12 @@ if [ ! -f /data/.openclaw/openclaw.json ]; then
   },
   "agent": {
     "id": "missionbound-growth",
-    "name": "MissionBound Growth",
-    "soulMdPath": "/app/SOUL.md",
-    "agentsMdPath": "/app/AGENTS.md",
-    "toolsMdPath": "/app/TOOLS.md",
-    "memoryMdPath": "/app/MEMORY.md"
-  }
+    "name": "MissionBound Growth"
+  },
+  "soulMdPath": "./SOUL.md",
+  "agentsMdPath": "./AGENTS.md", 
+  "toolsMdPath": "./TOOLS.md",
+  "memoryMdPath": "./MEMORY.md"
 }
 EOF
     echo "Created openclaw.json"
@@ -46,6 +46,6 @@ fi
 ls -la /data/.openclaw/
 cat /data/.openclaw/openclaw.json 2>/dev/null | head -5
 
-# Démarrage avec --allow-unconfigured pour forcer le chargement
+# Démarrage avec la config complète
 cd /app
-exec openclaw gateway --token missionbound-token-2026 --allow-unconfigured
+exec openclaw gateway --token missionbound-token-2026
