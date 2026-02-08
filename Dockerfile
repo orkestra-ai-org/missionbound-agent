@@ -1,5 +1,5 @@
-# MissionBound Agent — Dockerfile v2.3
-# Fix: Debugging complet + initialisation
+# MissionBound Agent — Dockerfile v2.4
+# Fix: OpenClaw version inexistante (1.2.0 n'existe pas sur npm)
 
 FROM node:22-alpine
 
@@ -7,8 +7,8 @@ RUN apk add --no-cache git curl
 
 WORKDIR /app
 
-# VERSION PINNÉE
-RUN npm install -g openclaw@1.2.0
+# Installation OpenClaw (dernière version disponible)
+RUN npm install -g openclaw
 
 # Fichiers système core
 COPY SOUL.md AGENTS.md TOOLS.md railway.toml ./
@@ -25,19 +25,16 @@ RUN if [ -d security ] && [ "$(ls -A security 2>/dev/null)" ]; then cp -r securi
 # Mémoire persistante
 RUN mkdir -p /data/.openclaw/agents/missionbound-growth/memory
 
-# Permissions (root pour le moment)
+# Permissions
 RUN chmod -R 777 /data
 
 EXPOSE 8080
 
-# Script d'entrypoint pour debugging
+# Script d'entrypoint avec debugging
 RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo 'set -x' >> /entrypoint.sh && \
     echo 'echo "=== Starting MissionBound Agent ==="' >> /entrypoint.sh && \
-    echo 'echo "Current dir: $(pwd)"' >> /entrypoint.sh && \
-    echo 'echo "Files: $(ls -la)"' >> /entrypoint.sh && \
-    echo 'echo "OpenClaw version: $(openclaw --version)"' >> /entrypoint.sh && \
-    echo 'echo "Config content:" && cat ./config.json' >> /entrypoint.sh && \
+    echo 'echo "OpenClaw version: $(openclaw --version 2>&1 || echo \"version check failed\")"' >> /entrypoint.sh && \
     echo 'echo "=== Starting Gateway ==="' >> /entrypoint.sh && \
     echo 'exec openclaw gateway --config ./config.json --port 8080' >> /entrypoint.sh && \
     chmod +x /entrypoint.sh
