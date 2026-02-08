@@ -31,8 +31,7 @@ COPY skills/ ./skills/
 COPY entrypoint.sh ./
 RUN chmod +x /app/entrypoint.sh
 
-# Config OpenClaw
-RUN mkdir -p /data/.openclaw && cp /app/openclaw.json /data/.openclaw/openclaw.json
+# (La config sera créée au runtime par entrypoint.sh)
 
 # Dossiers optionnels
 RUN mkdir -p ./schemas ./security

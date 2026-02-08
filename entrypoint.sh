@@ -8,6 +8,33 @@ sleep 1
 
 # Dossiers
 mkdir -p /root/.openclaw/agents/main/agent
+mkdir -p /data/.openclaw
+
+# Création de la config OpenClaw si inexistante
+if [ ! -f /data/.openclaw/openclaw.json ]; then
+    cat > /data/.openclaw/openclaw.json << 'EOF'
+{
+  "gateway": {
+    "mode": "local",
+    "port": 8080,
+    "host": "0.0.0.0",
+    "auth": {
+      "mode": "token",
+      "token": "missionbound-token-2026"
+    }
+  },
+  "agent": {
+    "id": "missionbound-growth",
+    "name": "MissionBound Growth",
+    "soulMdPath": "/app/SOUL.md",
+    "agentsMdPath": "/app/AGENTS.md",
+    "toolsMdPath": "/app/TOOLS.md",
+    "memoryMdPath": "/app/MEMORY.md"
+  }
+}
+EOF
+    echo "Created openclaw.json"
+fi
 
 # Auth profiles
 if [ -n "$OPENROUTER_API_KEY" ]; then
@@ -15,6 +42,10 @@ if [ -n "$OPENROUTER_API_KEY" ]; then
     echo "Auth profiles configured"
 fi
 
-# Démarrage
+# Vérification
+ls -la /data/.openclaw/
+cat /data/.openclaw/openclaw.json 2>/dev/null | head -5
+
+# Démarrage avec --allow-unconfigured pour forcer le chargement
 cd /app
-exec openclaw gateway --token missionbound-token-2026
+exec openclaw gateway --token missionbound-token-2026 --allow-unconfigured
