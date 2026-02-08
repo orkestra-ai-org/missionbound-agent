@@ -35,9 +35,13 @@ RUN mkdir -p /data/.openclaw/agents/missionbound-growth/memory
 
 # Script d'entrypoint qui configure l'auth au démarrage
 RUN echo '#!/bin/sh' > /entrypoint.sh && \
+    echo '# Nettoyage des anciens verrous et process' >> /entrypoint.sh && \
+    echo 'rm -f /data/.openclaw/gateway.pid /data/.openclaw/*.lock 2>/dev/null || true' >> /entrypoint.sh && \
+    echo 'pkill -f "openclaw gateway" 2>/dev/null || true' >> /entrypoint.sh && \
+    echo 'sleep 1' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
     echo 'mkdir -p /root/.openclaw/agents/main/agent' >> /entrypoint.sh && \
     echo 'if [ -n "$OPENROUTER_API_KEY" ]; then' >> /entrypoint.sh && \
-    echo '  # Configuration OpenRouter comme proxy pour tous les providers' >> /entrypoint.sh && \
     echo '  cat > /root/.openclaw/agents/main/agent/auth-profiles.json << EOF' >> /entrypoint.sh && \
     echo '{' >> /entrypoint.sh && \
     echo '  "anthropic": {' >> /entrypoint.sh && \
@@ -49,10 +53,10 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo '  }' >> /entrypoint.sh && \
     echo '}' >> /entrypoint.sh && \
     echo 'EOF' >> /entrypoint.sh && \
-    echo '  echo "Auth profiles configured with OpenRouter"' >> /entrypoint.sh && \
+    echo '  echo "Auth profiles configured"' >> /entrypoint.sh && \
     echo 'fi' >> /entrypoint.sh && \
-    echo '# Démarrage du gateway avec config' >> /entrypoint.sh && \
-    echo 'cd /app && openclaw gateway --token missionbound-token-2026' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo 'cd /app && exec openclaw gateway --token missionbound-token-2026 --foreground' >> /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
 # Permissions
