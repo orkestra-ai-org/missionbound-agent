@@ -1,14 +1,21 @@
-# MissionBound Agent — Dockerfile v2.5
-# Fix: OpenClaw version inexistante (1.2.0 n'existe pas sur npm)
-# Cache-bust: 2026-02-08T05:01:00Z
+# MissionBound Agent — Dockerfile v2.6
+# Fix: Passage de Alpine à Debian (node-llama-cpp nécessite glibc)
 
-FROM node:22-alpine
+FROM node:22-slim
 
-RUN apk add --no-cache git curl
+# Installation des dépendances système
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    build-essential \
+    cmake \
+    make \
+    python3 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Installation OpenClaw (dernière version disponible)
+# Installation OpenClaw
 RUN npm install -g openclaw
 
 # Fichiers système core
