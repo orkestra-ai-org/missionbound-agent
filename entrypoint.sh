@@ -1,5 +1,5 @@
 #!/bin/sh
-# OpenClaw Gateway Entrypoint - Mode "personnalité forcée"
+# OpenClaw Gateway Entrypoint - Debug complet
 
 # Nettoyage
 rm -f /data/.openclaw/gateway.pid /data/.openclaw/*.lock 2>/dev/null || true
@@ -16,29 +16,40 @@ if [ -n "$OPENROUTER_API_KEY" ]; then
     echo "Auth profiles configured"
 fi
 
-# HACK: Copie les fichiers de personnalité directement dans le dossier "main" agent
-# Quand --allow-unconfigured est utilisé, OpenClaw utilise l'agent "main"
-mkdir -p /root/.openclaw/agents/main/agent
-cp /app/SOUL.md /root/.openclaw/agents/main/agent/SOUL.md 2>/dev/null || true
-cp /app/AGENTS.md /root/.openclaw/agents/main/agent/AGENTS.md 2>/dev/null || true
-cp /app/TOOLS.md /root/.openclaw/agents/main/agent/TOOLS.md 2>/dev/null || true
-cp /app/MEMORY.md /root/.openclaw/agents/main/agent/MEMORY.md 2>/dev/null || true
+# Copie des fichiers de personnalité
+cp /app/SOUL.md /root/.openclaw/agents/main/agent/
+cp /app/AGENTS.md /root/.openclaw/agents/main/agent/
+cp /app/TOOLS.md /root/.openclaw/agents/main/agent/
+cp /app/MEMORY.md /root/.openclaw/agents/main/agent/
 
-# Création d'un agent.json pour l'agent "main" (utilisé par --allow-unconfigured)
-cat > /root/.openclaw/agents/main/agent.json << 'EOFMAIN'
+# Permissions
+chmod -R 644 /root/.openclaw/agents/main/agent/*.md
+
+# Création agent.json pour "main"
+cat > /root/.openclaw/agents/main/agent.json << 'EOF'
 {
   "id": "main",
   "name": "MissionBound Growth",
   "soulMdPath": "./agent/SOUL.md",
   "agentsMdPath": "./agent/AGENTS.md",
   "toolsMdPath": "./agent/TOOLS.md",
-  "memoryMdPath": "./agent/MEMORY.md"
+  "memoryMdPath": "./agent/MEMORY.md",
+  "capabilities": ["memory", "tools", "sessions"]
 }
-EOFMAIN
+EOF
 
-echo "=== Fichiers copiés dans main/agent ==="
+echo "=== DEBUG: Contenu de /root/.openclaw/agents/main/ ==="
+ls -la /root/.openclaw/agents/main/
+
+echo "=== DEBUG: Contenu de /root/.openclaw/agents/main/agent/ ==="
 ls -la /root/.openclaw/agents/main/agent/
 
-# Démarrage avec --allow-unconfigured MAIS avec les fichiers en place
+echo "=== DEBUG: Premieres lignes SOUL.md ==="
+head -10 /root/.openclaw/agents/main/agent/SOUL.md 2>/dev/null || echo "SOUL.md non trouve"
+
+echo "=== DEBUG: agent.json ==="
+cat /root/.openclaw/agents/main/agent.json
+
+# Démarrage
 cd /app
 exec openclaw gateway --token missionbound-token-2026 --allow-unconfigured
