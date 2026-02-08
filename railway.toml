@@ -29,3 +29,4 @@ AGENT_ID = "missionbound-growth"
 OPENCLAW_PORT = "8080"
 NODE_ENV = "production"
 OPENCLAW_GATEWAY_TOKEN = "missionbound-token-2026"
+# Clés API - définies manuellement dans Railway Dashboard
