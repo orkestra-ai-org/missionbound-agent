@@ -1,5 +1,5 @@
-# MissionBound Agent — Dockerfile v2.2
-# Fix: CMD avec shell pour voir les erreurs
+# MissionBound Agent — Dockerfile v2.3
+# Fix: Debugging complet + initialisation
 
 FROM node:22-alpine
 
@@ -25,11 +25,21 @@ RUN if [ -d security ] && [ "$(ls -A security 2>/dev/null)" ]; then cp -r securi
 # Mémoire persistante
 RUN mkdir -p /data/.openclaw/agents/missionbound-growth/memory
 
-# Sécurité
-RUN adduser -D appuser && chown -R appuser /app /data
-USER appuser
+# Permissions (root pour le moment)
+RUN chmod -R 777 /data
 
 EXPOSE 8080
 
-# CMD avec shell pour capturer les erreurs
-CMD openclaw gateway --config ./config.json --port 8080 2>&1 || (echo "Exit code: $?" && sleep 30)
+# Script d'entrypoint pour debugging
+RUN echo '#!/bin/sh' > /entrypoint.sh && \
+    echo 'set -x' >> /entrypoint.sh && \
+    echo 'echo "=== Starting MissionBound Agent ==="' >> /entrypoint.sh && \
+    echo 'echo "Current dir: $(pwd)"' >> /entrypoint.sh && \
+    echo 'echo "Files: $(ls -la)"' >> /entrypoint.sh && \
+    echo 'echo "OpenClaw version: $(openclaw --version)"' >> /entrypoint.sh && \
+    echo 'echo "Config content:" && cat ./config.json' >> /entrypoint.sh && \
+    echo 'echo "=== Starting Gateway ==="' >> /entrypoint.sh && \
+    echo 'exec openclaw gateway --config ./config.json --port 8080' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+CMD ["/entrypoint.sh"]
