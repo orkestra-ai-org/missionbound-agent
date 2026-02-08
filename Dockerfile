@@ -40,5 +40,5 @@ RUN chmod -R 777 /data
 ENV PORT=8080
 EXPOSE 8080
 
-# Entrypoint simple sans healthcheck complexe
-CMD openclaw gateway --config ./config.json --port 8080 2>&1
+# Entrypoint simple
+CMD ["openclaw", "gateway"]
