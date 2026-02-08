@@ -41,4 +41,4 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Entrypoint simple
-CMD ["openclaw", "gateway", "--allow-unconfigured"]
+CMD ["openclaw", "gateway", "--token", "missionbound-token-2026"]
