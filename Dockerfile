@@ -44,4 +44,5 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Entrypoint
-CMD ["/app/entrypoint.sh"]
+RUN ln -sf /app/entrypoint.sh /entrypoint.sh
+CMD ["/entrypoint.sh"]

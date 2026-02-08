@@ -8,7 +8,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "/entrypoint.sh"
+startCommand = "/app/entrypoint.sh"
 # Le script démarre le gateway avec la config complète
 # Healthcheck désactivé: node-llama-cpp compile au démarrage (>30s)
 # Railway vérifie que le processus tourne (suffisant pour notre usage)
