@@ -1,0 +1,19 @@
+{
+  "gateway": {
+    "mode": "local",
+    "port": 8080,
+    "host": "0.0.0.0",
+    "auth": {
+      "mode": "token",
+      "token": "missionbound-token-2026"
+    }
+  },
+  "agent": {
+    "id": "missionbound-growth",
+    "name": "MissionBound Growth",
+    "soulMdPath": "/app/SOUL.md",
+    "agentsMdPath": "/app/AGENTS.md",
+    "toolsMdPath": "/app/TOOLS.md",
+    "memoryMdPath": "/app/MEMORY.md"
+  }
+}

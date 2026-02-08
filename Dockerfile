@@ -24,11 +24,15 @@ RUN npm install -g openclaw
 # Fichiers système core
 COPY SOUL.md AGENTS.md TOOLS.md railway.toml ./
 COPY config.json ./
+COPY openclaw.json ./
 COPY MEMORY.md ./
 COPY .github/ ./.github/
 COPY skills/ ./skills/
 COPY entrypoint.sh ./
 RUN chmod +x /app/entrypoint.sh
+
+# Config OpenClaw
+RUN mkdir -p /data/.openclaw && cp /app/openclaw.json /data/.openclaw/openclaw.json
 
 # Dossiers optionnels
 RUN mkdir -p ./schemas ./security
