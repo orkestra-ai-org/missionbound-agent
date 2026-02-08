@@ -3,6 +3,9 @@
 
 FROM node:22-slim
 
+# Cache-bust pour forcer rebuild propre (timestamp: 2026-02-08-0719)
+ARG CACHE_BUST=1
+
 # Installation des dépendances système
 RUN apt-get update && apt-get install -y \
     git \
