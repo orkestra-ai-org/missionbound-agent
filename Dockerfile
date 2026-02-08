@@ -33,6 +33,16 @@ RUN if [ -d security ] && [ "$(ls -A security 2>/dev/null)" ]; then cp -r securi
 # Mémoire persistante
 RUN mkdir -p /data/.openclaw/agents/missionbound-growth/memory
 
+# Script d'entrypoint qui configure l'auth au démarrage
+RUN echo '#!/bin/sh' > /entrypoint.sh && \
+    echo 'mkdir -p /root/.openclaw/agents/main/agent' >> /entrypoint.sh && \
+    echo 'if [ -n "$OPENROUTER_API_KEY" ]; then' >> /entrypoint.sh && \
+    echo '  echo "{\"anthropic\":{\"apiKey\":\"$OPENROUTER_API_KEY\",\"baseUrl\":\"https://openrouter.ai/api/v1\"},\"openrouter\":{\"apiKey\":\"$OPENROUTER_API_KEY\"}}" > /root/.openclaw/agents/main/agent/auth-profiles.json' >> /entrypoint.sh && \
+    echo '  echo "Auth profiles configured with OpenRouter"' >> /entrypoint.sh && \
+    echo 'fi' >> /entrypoint.sh && \
+    echo 'exec openclaw gateway --token missionbound-token-2026 --allow-unconfigured' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
 # Permissions
 RUN chmod -R 777 /data
 
@@ -40,5 +50,5 @@ RUN chmod -R 777 /data
 ENV PORT=8080
 EXPOSE 8080
 
-# Entrypoint simple
-CMD ["openclaw", "gateway", "--token", "missionbound-token-2026", "--allow-unconfigured"]
+# Entrypoint
+CMD ["/entrypoint.sh"]
