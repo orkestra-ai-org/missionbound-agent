@@ -10,7 +10,7 @@ sleep 1
 mkdir -p /root/.openclaw/agents/main/agent
 mkdir -p /data/.openclaw
 
-# Création de la config OpenClaw si inexistante
+# Création de la config minimale
 if [ ! -f /data/.openclaw/openclaw.json ]; then
     cat > /data/.openclaw/openclaw.json << 'EOF'
 {
@@ -22,15 +22,7 @@ if [ ! -f /data/.openclaw/openclaw.json ]; then
       "mode": "token",
       "token": "missionbound-token-2026"
     }
-  },
-  "agent": {
-    "id": "missionbound-growth",
-    "name": "MissionBound Growth"
-  },
-  "soulMdPath": "./SOUL.md",
-  "agentsMdPath": "./AGENTS.md", 
-  "toolsMdPath": "./TOOLS.md",
-  "memoryMdPath": "./MEMORY.md"
+  }
 }
 EOF
     echo "Created openclaw.json"
@@ -42,10 +34,27 @@ if [ -n "$OPENROUTER_API_KEY" ]; then
     echo "Auth profiles configured"
 fi
 
-# Vérification
-ls -la /data/.openclaw/
-cat /data/.openclaw/openclaw.json 2>/dev/null | head -5
+# IMPORTANT: Configurer l'agent dans le dossier agents/
+mkdir -p /root/.openclaw/agents/missionbound-growth
+if [ ! -f /root/.openclaw/agents/missionbound-growth/agent.json ]; then
+    cat > /root/.openclaw/agents/missionbound-growth/agent.json << 'EOF'
+{
+  "id": "missionbound-growth",
+  "name": "MissionBound Growth",
+  "soulMdPath": "/app/SOUL.md",
+  "agentsMdPath": "/app/AGENTS.md",
+  "toolsMdPath": "/app/TOOLS.md",
+  "memoryMdPath": "/app/MEMORY.md"
+}
+EOF
+    echo "Created agent.json"
+fi
 
-# Démarrage avec la config complète
+# Vérification
+echo "=== Fichiers config ==="
+ls -la /data/.openclaw/
+ls -la /root/.openclaw/agents/
+
+# Démarrage avec --allow-unconfigured mais avec la config copiée
 cd /app
-exec openclaw gateway --token missionbound-token-2026
+exec openclaw gateway --token missionbound-token-2026 --allow-unconfigured
