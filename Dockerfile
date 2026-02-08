@@ -37,7 +37,18 @@ RUN mkdir -p /data/.openclaw/agents/missionbound-growth/memory
 RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo 'mkdir -p /root/.openclaw/agents/main/agent' >> /entrypoint.sh && \
     echo 'if [ -n "$OPENROUTER_API_KEY" ]; then' >> /entrypoint.sh && \
-    echo '  echo "{\"anthropic\":{\"apiKey\":\"$OPENROUTER_API_KEY\",\"baseUrl\":\"https://openrouter.ai/api/v1\"},\"openrouter\":{\"apiKey\":\"$OPENROUTER_API_KEY\"}}" > /root/.openclaw/agents/main/agent/auth-profiles.json' >> /entrypoint.sh && \
+    echo '  # Configuration OpenRouter comme proxy pour tous les providers' >> /entrypoint.sh && \
+    echo '  cat > /root/.openclaw/agents/main/agent/auth-profiles.json << EOF' >> /entrypoint.sh && \
+    echo '{' >> /entrypoint.sh && \
+    echo '  "anthropic": {' >> /entrypoint.sh && \
+    echo '    "apiKey": "'"'$OPENROUTER_API_KEY'"'",' >> /entrypoint.sh && \
+    echo '    "baseURL": "https://openrouter.ai/api/v1"' >> /entrypoint.sh && \
+    echo '  },' >> /entrypoint.sh && \
+    echo '  "openrouter": {' >> /entrypoint.sh && \
+    echo '    "apiKey": "'"'$OPENROUTER_API_KEY'"'"' >> /entrypoint.sh && \
+    echo '  }' >> /entrypoint.sh && \
+    echo '}' >> /entrypoint.sh && \
+    echo 'EOF' >> /entrypoint.sh && \
     echo '  echo "Auth profiles configured with OpenRouter"' >> /entrypoint.sh && \
     echo 'fi' >> /entrypoint.sh && \
     echo 'exec openclaw gateway --token missionbound-token-2026 --allow-unconfigured' >> /entrypoint.sh && \

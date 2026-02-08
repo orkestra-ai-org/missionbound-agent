@@ -17,7 +17,7 @@
   },
   "model_routing": {
     "default": "openrouter/moonshotai/kimi-k2.5",
-    "strategy": "openrouter/anthropic/claude-opus-4",
+    "strategy": "openrouter/moonshotai/kimi-k2.5",
     "browsing": "openrouter/deepseek/deepseek-v3",
     "vision": "openrouter/google/gemini-2.5-flash",
     "twitter": "openrouter/x-ai/grok-4.1-fast"
@@ -51,7 +51,6 @@
     "hard_stop_threshold": 1.0,
     "model_costs": {
       "openrouter/moonshotai/kimi-k2.5": 0.0006,
-      "openrouter/anthropic/claude-opus-4": 0.005,
       "openrouter/deepseek/deepseek-v3": 0.00027,
       "openrouter/google/gemini-2.5-flash": 0.0001,
       "openrouter/x-ai/grok-4.1-fast": 0.0002
